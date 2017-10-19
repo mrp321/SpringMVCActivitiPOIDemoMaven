@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>SpringMVCActivitiDemoMaven</groupId>
-	<artifactId>SpringMVCActivitiDemoMaven</artifactId>
+	<groupId>SpringMVCActivitiPOIDemoMaven</groupId>
+	<artifactId>SpringMVCActivitiPOIDemoMaven</artifactId>
 	<packaging>war</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 	<dependencies>
@@ -341,7 +341,11 @@
 			<artifactId>spring-websocket</artifactId>
 			<version>4.3.9.RELEASE</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.17</version>
+		</dependency>
 		<dependency>
 			<!-- 解决javax.servlet相关的class找不到的问题 ，如HttpSession、HttpServletRequest、HttpServletResponse -->
 			<groupId>javax.servlet</groupId>
@@ -363,15 +367,15 @@
 			<!-- 手动引入本地jar包 -->
 			<!-- 需要配置scope节点内容为system -->
 			<!-- systemPath节点内容为jar包路径 -->
-			 <scope>system</scope>  
-			 <systemPath>${project.basedir}/src/main/webapp/WEB-INF/libs/dcharts-widget-0.10.0.jar</systemPath> 
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/webapp/WEB-INF/libs/dcharts-widget-0.10.0.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.tests</groupId>
 			<artifactId>mule-tests-functional</artifactId>
 			<version>3.5.0</version>
-			 <scope>system</scope>
-			 <systemPath>${project.basedir}/src/main/webapp/WEB-INF/libs/mule-tests-functional-3.5.0.jar</systemPath>   
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/webapp/WEB-INF/libs/mule-tests-functional-3.5.0.jar</systemPath>
 		</dependency>
 
 	</dependencies>
@@ -395,6 +399,17 @@
 					<!-- 手动指定jdk版本为1.7 -->
 					<source>1.7</source>
 					<target>1.7</target>
+				</configuration>
+			</plugin>
+
+			<!-- 使用Maven的plugin:jetty来部署web -->
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>maven-jetty-plugin</artifactId>
+				<version>6.1.26</version>
+				<configuration>
+					<webAppSourceDirectory>${basedir}/src/main/webapp</webAppSourceDirectory>
+					<contextPath>/</contextPath>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -424,30 +439,12 @@
 		</resources>
 	</build>
 
-	<!-- <repositories>
-		<repository>
-			<id>central</id>
-			<url>http://repo1.maven.org/maven2</url>
-			<url>http://maven.aliyun.com/nexus/content/groups/public/</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>apache.snapshots.repo</id>
-			<url>https://repository.apache.org/content/groups/snapshots</url>
-			<name>Apache Snapshots Repository</name>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>datanucleus</id>
-			<url>http://www.datanucleus.org/downloads/maven2</url>
-			<name>Datanucleus</name>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories> -->
+	<!-- <repositories> <repository> <id>central</id> <url>http://repo1.maven.org/maven2</url> 
+		<url>http://maven.aliyun.com/nexus/content/groups/public/</url> <snapshots> 
+		<enabled>false</enabled> </snapshots> </repository> <repository> <id>apache.snapshots.repo</id> 
+		<url>https://repository.apache.org/content/groups/snapshots</url> <name>Apache 
+		Snapshots Repository</name> <snapshots> <enabled>false</enabled> </snapshots> 
+		</repository> <repository> <id>datanucleus</id> <url>http://www.datanucleus.org/downloads/maven2</url> 
+		<name>Datanucleus</name> <snapshots> <enabled>false</enabled> </snapshots> 
+		</repository> </repositories> -->
 </project>
