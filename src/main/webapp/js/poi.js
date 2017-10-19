@@ -45,13 +45,12 @@ var page = new Vue({
 			console.log(page.userList);
 			var userInfo = new Object();
 			userInfo.userList = page.userList;
+			userInfo.format = $("#format").val();
+			userInfo = JSON.stringify(userInfo);
 			$.ajax({
 				type : "post",
 				url : transfer2FileUrl,
-				data : {
-					format : $("#format").val(),
-					userInfo : JSON.stringify(userInfo)
-				},
+				data : userInfo,
 				contentType : "application/json",
 				success : function(data) {
 					alert(data.msg);

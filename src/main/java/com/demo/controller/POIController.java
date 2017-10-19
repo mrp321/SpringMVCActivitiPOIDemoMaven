@@ -45,15 +45,16 @@ public class POIController extends CommController {
 	 *            文件格式
 	 * @return
 	 */
-	@RequestMapping(value = "transfer2File")
+	@RequestMapping(value = "transfer2File"/*, consumes = "application/json"*/)
+	
 	@ResponseBody
-	public Map<String, Object> transfer2Excel(HttpServletRequest request,
-			@RequestBody UserInfo userInfo, String format) {
+	public Map<String, Object> transfer2File(HttpServletRequest request,
+			@RequestBody UserInfo userInfo) {
 		Map<String, Object> map = new HashMap<String, Object>(16);
-		if (userInfo != null && StrUtil.isNotEmpty(format)) {
-			lg.info("转换开始，传入参数-> userInfo=" + userInfo + ", format=" + format);
+		if (userInfo != null) {
+			lg.info("转换开始，传入参数-> userInfo=" + userInfo);
 			try {
-				this.poiService.transfer2File(userInfo, format);
+				this.poiService.transfer2File(userInfo);
 				map = this.getSuccessMap("转换成功");
 			} catch (Exception e) {
 				map = this.getFailureMap("转换失败，信息：" + e.getMessage());

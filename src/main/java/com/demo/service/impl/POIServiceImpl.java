@@ -1,6 +1,5 @@
 package com.demo.service.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -12,6 +11,7 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.stereotype.Service;
 
 import com.demo.entity.User;
@@ -30,7 +30,9 @@ public class POIServiceImpl implements POIService {
 	 * @throws FileNotFoundException
 	 */
 	@Override
-	public void transfer2File(UserInfo userInfo, String format) {
+	public void transfer2File(UserInfo userInfo) {
+		String format = userInfo.getFormat();
+		List<User> userList = userInfo.getUserList();
 		File file = new File("C:\\1." + format);
 		OutputStream outputStream = null;
 		try {
@@ -40,45 +42,46 @@ public class POIServiceImpl implements POIService {
 		}
 		switch (format) {
 		case "xls":
-			this.transfer2Xls(userInfo, outputStream);
+			this.transfer2Xls(userList, outputStream);
 			break;
 		case "xlsx":
-			this.transfer2Xlsx(userInfo, outputStream);
+			this.transfer2Xlsx(userList, outputStream);
 			break;
 
 		case "doc":
-			this.transfer2Doc(userInfo, outputStream);
+			this.transfer2Doc(userList, outputStream);
 			break;
 
 		case "docx":
-			this.transfer2Docx(userInfo, outputStream);
+			this.transfer2Docx(userList, outputStream);
 			break;
 		default:
 			break;
 		}
 	}
 
-	private void transfer2Docx(UserInfo userInfo, OutputStream outputStream) {
+	private void transfer2Docx(List<User> userList, OutputStream outputStream) {
 		// TODO Auto-generated method stub
 
 	}
 
-	private void transfer2Doc(UserInfo userInfo, OutputStream outputStream) {
+	private void transfer2Doc(List<User> userList, OutputStream outputStream) {
 		// TODO Auto-generated method stub
 
 	}
 
-	private void transfer2Xlsx(UserInfo userInfo, OutputStream outputStream) {
+	private void transfer2Xlsx(List<User> userList, OutputStream outputStream) {
 		// TODO Auto-generated method stub
 
 	}
 
-	private void transfer2Xls(UserInfo userInfo, OutputStream outputStream) {
+	private void transfer2Xls(List<User> userList, OutputStream outputStream) {
 		HSSFWorkbook workbook = new HSSFWorkbook();
 		HSSFSheet sheet = workbook.createSheet("员工信息一览");
 		HSSFRow row = null;
 		HSSFCell cell = null;
 		// 为sheet生成第一行，用于放表头信息
+		sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 1));
 		row = sheet.createRow(0);
 		// 为第一行的第一个单元格的设置值
 		cell = row.createCell(0);
@@ -92,12 +95,11 @@ public class POIServiceImpl implements POIService {
 		cell = row.createCell(1);
 		cell.setCellValue("密码");
 		// 为sheet生成剩余行，用于存放用户具体信息
-		List<User> userList = userInfo.getUserList();
 		int len = userList.size();
 		for (int i = 0; i < len; i++) {
 			User user = userList.get(i);
 			// 员工每添加一个，表格就再生成一行
-			row = sheet.createRow(i + 1);
+			row = sheet.createRow(i + 2);
 			// 这是用户id数据
 			cell = row.createCell(0);
 			cell.setCellValue(user.getUserId());

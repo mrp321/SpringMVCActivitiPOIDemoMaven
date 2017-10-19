@@ -12,6 +12,8 @@ import java.util.List;
 public class UserInfo {
 	/** 用户列表 */
 	private List<User> userList;
+	/** 导出文件格式 */
+	private String format;
 
 	public List<User> getUserList() {
 		return userList;
@@ -21,8 +23,17 @@ public class UserInfo {
 		this.userList = userList;
 	}
 
+	public String getFormat() {
+		return format;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
+	}
+
 	@Override
 	public String toString() {
-		return "UserInfo [userList=" + userList + "]";
+		return "UserInfo [userList=" + userList + ", format=" + format + "]";
 	}
+
 }

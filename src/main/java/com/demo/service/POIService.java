@@ -17,7 +17,7 @@ public interface POIService {
 	 *            格式
 	 * @throws FileNotFoundException
 	 */
-	void transfer2File(UserInfo userInfo, String format)
+	void transfer2File(UserInfo userInfo)
 			throws FileNotFoundException;
 
 }
