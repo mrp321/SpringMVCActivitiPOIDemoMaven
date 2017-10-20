@@ -1,9 +1,10 @@
 var transfer2FileUrl = "/poi/transfer2File.do";
-
+var downloadUrl = "/poi/download.do";
 var page = new Vue({
 	el : "#page",
 	data : {
-		userList : []
+		userList : [],
+		downloadUrlWithFormat : "",
 	},
 	mounted : function() {
 		this.$nextTick(function() {
@@ -46,16 +47,26 @@ var page = new Vue({
 			var userInfo = new Object();
 			userInfo.userList = page.userList;
 			userInfo.format = $("#format").val();
+			// 对象转为json字符串
 			userInfo = JSON.stringify(userInfo);
 			$.ajax({
 				type : "post",
 				url : transfer2FileUrl,
+				async : false, 
 				data : userInfo,
 				contentType : "application/json",
 				success : function(data) {
-					alert(data.msg);
+					console.log("transfer result=" + data.msg);
+					if (data.success) {
+						page.download();
+					}
 				}
 			})
+		},
+		// 下载
+		download : function() {
+			var format = $("#format").val();
+			page.downloadUrlWithFormat = downloadUrl + "?format=" + format;
 		}
 	}
 })

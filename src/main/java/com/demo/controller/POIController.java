@@ -1,5 +1,6 @@
 package com.demo.controller;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,10 +8,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.demo.entity.UserInfo;
@@ -45,8 +46,7 @@ public class POIController extends CommController {
 	 *            文件格式
 	 * @return
 	 */
-	@RequestMapping(value = "transfer2File"/*, consumes = "application/json"*/)
-	
+	@RequestMapping(value = "transfer2File"/* , consumes = "application/json" */)
 	@ResponseBody
 	public Map<String, Object> transfer2File(HttpServletRequest request,
 			@RequestBody UserInfo userInfo) {
@@ -64,5 +64,25 @@ public class POIController extends CommController {
 			map = this.getEmptyParamsMap();
 		}
 		return map;
+	}
+
+	/**
+	 * 下载文件
+	 * 
+	 * @return
+	 * @throws Exception
+	 * @throws IOException
+	 */
+	@RequestMapping("download")
+	public ResponseEntity<byte[]> download(HttpServletRequest request,
+			String format) throws Exception {
+		if (StrUtil.isNotEmpty(format)) {
+			ResponseEntity<byte[]> entity = null;
+			entity = this.poiService.download(format);
+			return entity;
+		} else {
+			throw new Exception("传入参数不能为空");
+		}
+
 	}
 }

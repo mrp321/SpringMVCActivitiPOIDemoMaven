@@ -7,7 +7,8 @@
 <title>SpringMVC 、Mybatis 、Activiti整合测试</title>
 </head>
 <body>
-	<a href="user.jsp">spring+Mybatis测试</a>
-	<a href="activiti.jsp">spring+Mybatis+Activiti测试</a>
+	<a href="user.jsp">spring+Mybatis测试</a><br>
+	<a href="activiti.jsp">springmvc+Mybatis+Activiti测试</a><br>
+	<a href="poi.jsp">springmvc+Mybatis+Activiti+POI测试</a>
 </body>
 </html>
