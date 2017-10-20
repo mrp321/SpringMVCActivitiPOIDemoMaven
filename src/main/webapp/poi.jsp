@@ -35,8 +35,8 @@
 			<select id="format">
 				<option value="xls" selected="selected">xls</option>
 				<option value="xlsx">xlsx</option>
-<!-- 				<option value="doc">doc</option>
-				<option value="docx">docx</option> -->
+ 				<option value="doc">doc</option>
+				<option value="docx">docx</option>
 			</select> <input type="button" value="生成" @click="transfer()"> <a :href="downloadUrlWithFormat">下载文件</a>
 		</div>
 	</div>

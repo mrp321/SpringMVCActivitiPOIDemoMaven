@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.util.List;
 
@@ -20,6 +21,16 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.TextAlignment;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableCell;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblBorders;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -85,7 +96,56 @@ public class POIServiceImpl implements POIService {
 	 * @return
 	 */
 	private void transfer2Docx(List<User> userList, OutputStream outputStream) {
+		// XWPFParagraph：代表一个段落。
+		// XWPFRun：代表具有相同属性的一段文本。
+		// XWPFTable：代表一个表格。
+		// XWPFTableRow：表格的一行。
+		// XWPFTableCell：表格对应的一个单元格。
+		// 获取list长度
+		int userListLen = userList.size();
+		XWPFDocument doc = new XWPFDocument();
+		XWPFParagraph p1 = doc.createParagraph();
 
+		// 生成 userListLen + 1 行，2列的表格
+		XWPFTable table = doc.createTable(userListLen + 1, 2);
+		CTTblPr tblPr = table.getCTTbl().getTblPr();
+		tblPr.getTblW().setType(STTblWidth.DXA);
+		tblPr.getTblW().setW(new BigInteger("7000"));
+
+		// 设置上下左右四个方向的距离，可以将表格撑大
+		table.setCellMargins(20, 20, 20, 20);
+		// 表格
+		List<XWPFTableCell> tableCells = table.getRow(0).getTableCells();
+		tableCells.get(0).setText("用户id");
+		tableCells.get(1).setText("密码");
+		for (int i = 0; i < userListLen; i++) {
+			User user = userList.get(i);
+			tableCells = table.getRow(i + 1).getTableCells();
+			tableCells.get(0).setText(user.getUserId());
+			tableCells.get(1).setText(user.getPassword());
+		}
+		// 设置字体对齐方式
+		p1.setAlignment(ParagraphAlignment.CENTER);
+		p1.setVerticalAlignment(TextAlignment.TOP);
+		// 第一页要使用p1所定义的属性
+		XWPFRun r1 = p1.createRun();
+		// 设置字体是否加粗
+		r1.setBold(true);
+		r1.setFontSize(20);
+		// 设置使用何种字体
+		r1.setFontFamily("Courier");
+		// 设置上下两行之间的间距
+		r1.setTextPosition(20);
+		r1.setText("用户信息表");
+		try {
+			doc.write(outputStream);
+			outputStream.close();
+			doc.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+
+		}
 	}
 
 	/**
@@ -98,7 +158,7 @@ public class POIServiceImpl implements POIService {
 	 * @return
 	 */
 	private void transfer2Doc(List<User> userList, OutputStream outputStream) {
-
+		this.transfer2Docx(userList, outputStream);
 	}
 
 	/**
@@ -128,7 +188,6 @@ public class POIServiceImpl implements POIService {
 	private void transfer2Xls(List<User> userList, OutputStream outputStream) {
 		HSSFWorkbook workbook = new HSSFWorkbook();
 		this.genFile(workbook, userList, outputStream);
-
 	}
 
 	/**
@@ -194,8 +253,10 @@ public class POIServiceImpl implements POIService {
 		}
 		try {
 			workbook.write(outputStream);
+			workbook.close();
 			outputStream.flush();
 			outputStream.close();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
