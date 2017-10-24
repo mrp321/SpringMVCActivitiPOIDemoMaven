@@ -9,6 +9,7 @@
 <body>
 	<a href="user.jsp">spring+Mybatis测试</a><br>
 	<a href="activiti.jsp">springmvc+Mybatis+Activiti测试</a><br>
-	<a href="poi.jsp">springmvc+Mybatis+Activiti+POI测试</a>
+	<a href="poi.jsp">POI写入测试</a><br>
+	<a href="file2entity.jsp">POI读取测试</a>
 </body>
 </html>

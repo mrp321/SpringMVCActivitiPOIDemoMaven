@@ -2,6 +2,7 @@ package com.demo.controller;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.demo.entity.User;
 import com.demo.entity.UserInfo;
 import com.demo.service.POIService;
 import com.xiaoleilu.hutool.util.StrUtil;
@@ -84,5 +86,47 @@ public class POIController extends CommController {
 			throw new Exception("传入参数不能为空");
 		}
 
+	}
+
+	/**
+	 * 文件上传
+	 * 
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping("uploadFile")
+	@ResponseBody
+	public Map<String, Object> uploadFile(HttpServletRequest request) {
+		Map<String, Object> map = new HashMap<>();
+		try {
+			List<String> fileList = this.poiService.uploadFile(request);
+			map = this.getReturnMap(true, fileList, "上传成功");
+		} catch (Exception e) {
+			map = this.getFailureMap("上传失败，信息：" + e.getMessage());
+		}
+		return map;
+	}
+
+	/**
+	 * 将文件转换为实体
+	 * 
+	 * @param request
+	 * @param file
+	 *            文件
+	 * @return
+	 */
+	@RequestMapping("transferFile2Entity")
+	@ResponseBody
+	public Map<String, Object> transferFile2Entity(HttpServletRequest request,
+			String file) {
+		Map<String, Object> map = new HashMap<>();
+		try {
+			List<User> userList = this.poiService.transferFile2Entity(request,
+					file);
+			map = this.getReturnMap(true, userList, "转换成功");
+		} catch (Exception e) {
+			map = this.getFailureMap("转换失败，信息：" + e.getMessage());
+		}
+		return map;
 	}
 }

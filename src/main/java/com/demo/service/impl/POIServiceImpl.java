@@ -1,17 +1,26 @@
 package com.demo.service.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.usermodel.Range;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -19,6 +28,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
@@ -28,7 +38,7 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblBorders;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 import org.springframework.http.HttpHeaders;
@@ -36,6 +46,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.demo.entity.User;
 import com.demo.entity.UserInfo;
@@ -211,10 +223,14 @@ public class POIServiceImpl implements POIService {
 		Row row = null;
 		Cell cell = null;
 		// 设置边框
-		style.setBorderBottom(BorderStyle.THIN); // 下边框
-		style.setBorderLeft(BorderStyle.THIN);// 左边框
-		style.setBorderTop(BorderStyle.THIN);// 上边框
-		style.setBorderRight(BorderStyle.THIN);// 右边框
+		// 下边框
+		style.setBorderBottom(BorderStyle.THIN);
+		// 左边框
+		style.setBorderLeft(BorderStyle.THIN);
+		// 上边框
+		style.setBorderTop(BorderStyle.THIN);
+		// 右边框
+		style.setBorderRight(BorderStyle.THIN);
 		font.setColor(HSSFFont.COLOR_NORMAL);
 		font.setBold(false);
 		style.setFont(font);
@@ -288,6 +304,240 @@ public class POIServiceImpl implements POIService {
 			e.printStackTrace();
 		}
 		return entity;
+	}
+
+	/**
+	 * 将文件转换为实体
+	 * 
+	 * @param request
+	 * @param file
+	 *            文件
+	 * @return
+	 */
+	@Override
+	public List<User> transferFile2Entity(HttpServletRequest request,
+			String file) {
+		String realPath = request.getSession().getServletContext()
+				.getRealPath("/");
+		String uploadPath = realPath + "/uploadTemp/";
+		File uploadFile = new File(uploadPath + file);
+		// 截取文件格式
+		String format = file.split("\\.")[1];
+		// 将文件中的内容转为List<User>
+		List<User> userList = this.transferFile2EntityByFormat(uploadFile,
+				format);
+		return userList;
+	}
+
+	/**
+	 * 文件上传
+	 * 
+	 * @param request
+	 */
+	public List<String> uploadFile(HttpServletRequest request) {
+		List<MultipartFile> files = ((MultipartHttpServletRequest) request)
+				.getFiles("file");
+		String realPath = request.getSession().getServletContext()
+				.getRealPath("/");
+		String uploadPath = realPath + "/uploadTemp/";
+		File uploadFile = new File(uploadPath);
+		// 如果上传文件目录不存在，则创建文件夹
+		if (!uploadFile.exists()) {
+			uploadFile.mkdirs();
+		}
+		List<String> fileList = new ArrayList<>();
+		for (MultipartFile file : files) {
+			if (file.isEmpty()) {
+				continue;
+			} else {
+				FileOutputStream fileOutputStream;
+				try {
+					fileOutputStream = new FileOutputStream(uploadPath
+							+ file.getOriginalFilename());
+					fileOutputStream.write(file.getBytes());
+					fileOutputStream.close();
+					fileList.add(file.getOriginalFilename());
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}
+		return fileList;
+
+	}
+
+	/**
+	 * 根据格式进行文件转实体
+	 * 
+	 * @param uploadFile
+	 *            上传的文件
+	 * @param format
+	 *            格式
+	 * @return
+	 */
+	private List<User> transferFile2EntityByFormat(File uploadFile,
+			String format) {
+		List<User> userList = null;
+		try {
+			InputStream inputStream = new FileInputStream(uploadFile);
+			switch (format) {
+			case "xls":
+			case "xlsx":
+				userList = this.genEntity(inputStream);
+				break;
+			case "doc":
+				// userList = this.doc2Entity(inputStream);
+				// break;
+			case "docx":
+				userList = this.docx2Entity(inputStream);
+				break;
+			default:
+				break;
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return userList;
+	}
+
+	/**
+	 * docx转实体
+	 * 
+	 * @param inputStream
+	 *            输入流
+	 * @param format
+	 *            文件格式
+	 * @return
+	 */
+	private List<User> docx2Entity(InputStream inputStream) {
+		List<User> userList = new ArrayList<User>();
+		User user = new User();
+		try {
+			XWPFDocument xDocument = new XWPFDocument(inputStream);
+			XWPFTableRow row = null;
+			// 获取所有表格
+			List<XWPFTable> tables = xDocument.getTables();
+			// 得到第一个表格
+			XWPFTable table = tables.get(0);
+
+			// 获取表格的行
+			List<XWPFTableRow> rows = table.getRows();
+			int rowNum = rows.size();
+			// 获取第一行
+			row = rows.get(0);
+			String textUserId = row.getCell(0).getText();
+			String textPassword = row.getCell(1).getText();
+			System.out.println("第一行：内容：" + textUserId + ", " + textPassword);
+			// 获取剩余行
+			for (int i = 1; i < rowNum; i++) {
+				// 获取表格的每个单元格
+				row = rows.get(i);
+				String userId = row.getCell(0).getText();
+				String password = row.getCell(1).getText();
+				user.setUserId(userId);
+				user.setPassword(password);
+				userList.add(user);
+				System.out.println("第" + i + "行， 内容：" + user);
+			}
+			xDocument.close();
+			inputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return userList;
+	}
+
+	/**
+	 * doc转实体
+	 * 
+	 * @param inputStream
+	 *            输入流
+	 * @param format
+	 *            文件格式
+	 * @return
+	 */
+	@SuppressWarnings("unused")
+	@Deprecated
+	private List<User> doc2Entity(InputStream inputStream) {
+		try {
+			HWPFDocument hDocument = new HWPFDocument(inputStream);
+			String docText = hDocument.getDocumentText();
+			System.out.println(docText);
+			StringBuilder text = hDocument.getText();
+			System.out.println(text);
+			Range range = hDocument.getRange();
+			String rangeText = range.text();
+			System.out.println(rangeText);
+			hDocument.close();
+			inputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	/**
+	 * 生成实体
+	 * 
+	 * @param inputStream
+	 *            输入流
+	 * @return
+	 */
+	private List<User> genEntity(InputStream inputStream) {
+		List<User> userList = new ArrayList<User>();
+		User user = new User();
+		try {
+			Workbook workbook = WorkbookFactory.create(inputStream);
+			Row row = null;
+			Cell cell = null;
+			// sheet 数
+			int sheetNum = workbook.getNumberOfSheets();
+			System.out.println("总sheet数：" + sheetNum);
+			// 获取第一个sheet
+			Sheet sheet = workbook.getSheetAt(0);
+			// 获取总行数
+			int rowNumOfSheet = sheet.getPhysicalNumberOfRows();
+			// 获取第一行第一列(标题）
+			cell = sheet.getRow(0).getCell(0);
+			String title = cell.getStringCellValue();
+			System.out.println("第一行：" + title);
+			// 获取第二行（用户id、密码这两个文字）
+			row = sheet.getRow(1);
+			int cellNumOf2rdRow = row.getPhysicalNumberOfCells();
+			String textUserId = row.getCell(0).getStringCellValue();
+			String textPassword = row.getCell(1).getStringCellValue();
+			System.out.println("第二行：cell数=" + cellNumOf2rdRow + ", 内容："
+					+ textUserId + "，" + textPassword);
+			// 获取剩下行数（用户具体信息）
+			for (int i = 2; i < rowNumOfSheet; i++) {
+				row = sheet.getRow(i);
+				int cellNumOfRemainRow = row.getPhysicalNumberOfCells();
+				String userId = row.getCell(0).getStringCellValue();
+				String password = row.getCell(1).getStringCellValue();
+				user.setUserId(userId);
+				user.setPassword(password);
+				userList.add(user);
+				System.out.println("第" + (i + 1) + "行，cell数="
+						+ cellNumOfRemainRow + "内容：userId=" + userId
+						+ ", password=" + password);
+				System.out.println("最终生成的userList=" + userList);
+			}
+
+		} catch (EncryptedDocumentException e) {
+			e.printStackTrace();
+		} catch (InvalidFormatException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+		return userList;
 	}
 
 }
